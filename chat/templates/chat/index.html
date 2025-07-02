@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chatbot</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f6f9;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    li {
+      background-color: #fff;
+      margin-bottom: 5px;
+      padding: 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      transition: 0.2s;
+    }
+
+    li:hover {
+      background-color: #e8f0ff;
+    }
+
+    .wrapper {
+      display: flex;
+      height: 100vh;
+      width: 100%;
+    }
+
+    .sidebar {
+      width: 20%;
+      padding: 10px;
+      background: #f0f0f0;
+      overflow-y: auto;
+    }
+
+    .chat-container {
+      width: 60%;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .chat-header {
+      background: #007bff;
+      color: #fff;
+      padding: 15px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .chat-box {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .message {
+      padding: 10px 15px;
+      border-radius: 20px;
+      max-width: 80%;
+    }
+
+    .user {
+      background: #e9ecef;
+      align-self: flex-end;
+    }
+
+    .bot {
+      background: #007bff;
+      color: #fff;
+      align-self: flex-start;
+    }
+
+    .chat-input {
+      display: flex;
+      border-top: 1px solid #ccc;
+    }
+
+    .chat-input input {
+      flex: 1;
+      border: none;
+      padding: 15px;
+      font-size: 16px;
+      border-radius: 0 0 0 10px;
+      outline: none;
+    }
+
+    .chat-input button {
+      background: #007bff;
+      color: #fff;
+      border: none;
+      padding: 15px 20px;
+      cursor: pointer;
+      font-size: 16px;
+      border-radius: 0 0 10px 0;
+    }
+
+    .chat-input button:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <!-- Left Sidebar -->
+  <div class="sidebar">
+    <h3>📌 Friendly & General</h3>
+    <ul>
+      <li onclick="fillInput('hi')">hi</li>
+      <li onclick="fillInput('how are you')">how are you</li>
+      <li onclick="fillInput('what is your name')">what is your name</li>
+      <li onclick="fillInput('i am bored')">i am bored</li>
+      <li onclick="fillInput('how do you work')">how do you work</li>
+      <li onclick="fillInput('what time is it')">what time is it</li>
+      <li onclick="fillInput('what is the capital of india')">what is the capital of india</li>
+      <li onclick="fillInput('who is the prime minister of india')">who is the prime minister of india</li>
+      <li onclick="fillInput('longest river')">longest river</li>
+      <li onclick="fillInput('who invented light bulb')">who invented light bulb</li>
+      <li onclick="fillInput('national animal of india')">national animal of india</li>
+      <li onclick="fillInput('currency of japan')">currency of japan</li>
+      <li onclick="fillInput('largest country')">largest country</li>
+      <li onclick="fillInput('how many continents')">how many continents</li>
+      <li onclick="fillInput('who wrote romeo and juliet')">who wrote romeo and juliet</li>
+      <li onclick="fillInput('highest dam in india')">highest dam in india</li>
+    </ul>
+  </div>
+
+  <!-- Chat UI -->
+  <div class="chat-container">
+    <div class="chat-header">Chatbot</div>
+    <div class="chat-box" id="chat-box"></div>
+    <div class="chat-input">
+      <input type="text" id="input" placeholder="Type your message..." autocomplete="off" />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <!-- Right Sidebar -->
+  <div class="sidebar">
+    <h3>💡 Computer & Mental Health</h3>
+    <ul>
+      <li onclick="fillInput('what is cpu')">what is cpu</li>
+      <li onclick="fillInput('what is ram')">what is ram</li>
+      <li onclick="fillInput('what is python')">what is python</li>
+      <li onclick="fillInput('what is github')">what is github</li>
+      <li onclick="fillInput('what is sql')">what is sql</li>
+      <li onclick="fillInput('what is cloud computing')">what is cloud computing</li>
+      <li onclick="fillInput('what is api')">what is api</li>
+      <li onclick="fillInput('what is database')">what is database</li>
+      <li onclick="fillInput('what is machine learning')">what is machine learning</li>
+      <li onclick="fillInput('what is cyber security')">what is cyber security</li>
+      <li onclick="fillInput('how to reduce stress')">how to reduce stress</li>
+      <li onclick="fillInput('i feel lonely')">i feel lonely</li>
+      <li onclick="fillInput('i am feeling anxious')">i am feeling anxious</li>
+      <li onclick="fillInput('cheer me up')">cheer me up</li>
+      <li onclick="fillInput('can you motivate me')">can you motivate me</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+  const chatBox = document.getElementById('chat-box');
+  const input = document.getElementById('input');
+  const socket = new WebSocket('ws://' + window.location.host + '/ws/chat/');
+
+  socket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+    addMessage('bot', data.message);
+  };
+
+  function sendMessage() {
+    const message = input.value.trim();
+    if (!message) return;
+    addMessage('user', message);
+    socket.send(JSON.stringify({ message }));
+    input.value = '';
+  }
+
+  function addMessage(sender, text) {
+    const msg = document.createElement('div');
+    msg.className = `message ${sender}`;
+    msg.innerText = (sender === 'user' ? 'You: ' : 'Bot: ') + text;
+    chatBox.appendChild(msg);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  function fillInput(text) {
+    input.value = text;
+    input.focus();
+  }
+
+  input.addEventListener("keyup", function(e) {
+    if (e.key === "Enter") sendMessage();
+  });
+</script>
+</body>
+</html>
